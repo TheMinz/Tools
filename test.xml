@@ -1,6 +1,5 @@
-<!-- http://chart.googleapis.com/chart?chxt=y,x&chbh=23,4,11&chs=300x156&cht=bvs&chco=008000&chd=s:DEEEE&chp=0.033 -->
-<chart>
-<s>DEEEE</s>
-<chp>0.033</chp>
-<legend>Monthly fuel Consumption</legend>
-</chart>
+<html>
+  <script>
+    alert(document.cookie)
+  </script>
+</html>
